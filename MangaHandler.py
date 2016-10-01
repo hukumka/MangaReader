@@ -6,7 +6,7 @@ import os
 
 class MangaHandler(DirHandler):
     """ used to iterate leaf over pages and volumes """
-    def __init__(self, path, mask=r"(?!\..*\.pickle)", max_level=None):
+    def __init__(self, path, mask=r"(?!.*\.pickle)", max_level=None):
         super().__init__(path, mask, max_level)
 
     def next_chapter(self):
