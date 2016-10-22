@@ -1,58 +1,50 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication
-from PyQt5.QtWidgets import QWidget, QStackedLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QFormLayout
 
-from Viewer import ViewerAutoSaveLoad as Viewer
+from MangaControlsWidget import MangaControlsWidget as Viewer
+from GlobalData import global_data
+
+
+class HelpWidget(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setLayout(QFormLayout())
+        self.layout().addRow("hjkl",  QLabel("Vim style navigation"))
+        self.layout().addRow("c(ontents)",  QLabel("toggle contents panel"))
+        self.layout().addRow("F1",  QLabel("toggle help panel (this)"))
+        self.layout().addRow("q(uit)",  QLabel("Exit from manga viewer"))
+        self.layout().addRow("o(pen)",  QLabel("Open manga folder"))
 
 
 class Window(QWidget):
     def __init__(self):
-        QWidget.__init__(self)
-        self.layout = QStackedLayout()
-        self.layout.setStackingMode(QStackedLayout.StackAll)
-        self.layout.setAlignment(Qt.AlignCenter)
-
-        self.viewer = Viewer(self)
-        self.layout.addWidget(self.viewer)
-
-        help = QLabel("\n".join([
-                      "hjkl - navigation",
-                      "b(ack) - previous chapter",
-                      "n(ext) - next chapter",
-                      "o(pen) - open manga folder",
-                      "q(uit) - quit reader",
-                      "F1 - toggle help"]),
-                      )
-        help.setVisible(False)
-        self.layout.addWidget(help)
-
-        self.setLayout(self.layout)
+        super().__init__()
+        self.setLayout(QVBoxLayout())
+        self.__help = HelpWidget()
+        self.__viewer = Viewer()
+        self.layout().addWidget(self.__help)
+        self.layout().addWidget(self.__viewer)
+        if not global_data.get('show_help'):
+            self.__help.hide()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Q:
             self.close()
         elif event.key() == Qt.Key_F1:
-            self.layout.setCurrentIndex(1 - self.layout.currentIndex())
+            self.__toggle_help()
         elif event.key() == Qt.Key_O:
-            self.viewer.open_dialog()
-        elif event.key() == Qt.Key_L:
-            self.viewer.next()
-        elif event.key() == Qt.Key_H:
-            self.viewer.prev()
-        elif event.key() == Qt.Key_K:
-            self.viewer.scroll(-100)
-        elif event.key() == Qt.Key_J:
-            self.viewer.scroll(100)
-        elif event.key() == Qt.Key_N:
-            self.viewer.next_chapter()
-        elif event.key() == Qt.Key_B:
-            self.viewer.prev_chapter()
-        elif event.key() == Qt.Key_Plus:
-            self.viewer.zoom(1.05)
-        elif event.key() == Qt.Key_Minus:
-            self.viewer.zoom(1/1.05)
+            self.__viewer.open_dialog()
         else:
             pass
+
+    def __toggle_help(self):
+        showed = global_data.get('show_help')
+        if showed:
+            self.__help.hide()
+        else:
+            self.__help.show()
+        global_data.set('show_help', not showed)
 
 
 if __name__ == '__main__':
